@@ -48,6 +48,17 @@ const armorSchema = new Schema(
       type: String,
       enum: ['starscape_systems', 'adrax_corp', 'orian_labs'],
       required: true
+    },
+    createdBy: {
+      userId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+      },
+      userName: {
+        type: String,
+        required: true
+      }
     }
   },
   { timestamps: true }

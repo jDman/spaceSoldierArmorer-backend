@@ -3,24 +3,27 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
 const multer = require('multer');
 
 const MONGODB_URI = require('./database/connection-uri');
 const SESSION_KEY = require('./database/session-secret');
 
+const armorShopRoutes = require('./routes/armorShop');
+const armorAdminRoutes = require('./routes/armorAdmin');
+
+const User = require('./models/user');
+
 const app = express();
 
-const store = new MongoDBStore({
-  uri: MONGODB_URI,
-  collection: 'sessions'
+const csrfProtection = csrf({
+  cookie: true
 });
-const csrfProtection = csrf();
 
 app.use(bodyParser.json());
-
-app.use(csrfProtection);
+// app.use(cookieParser());
+// app.use(csrfProtection);
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,9 +36,26 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/shop', armorShopRoutes);
+app.use('/admin', armorAdminRoutes);
+
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(result => {
+    return User.find();
+  })
+  .then(users => {
+    if (users.length === 0) {
+      const user = new User({
+        email: 'test@test.com',
+        password: 'sfsfsf',
+        userName: 'Freddy'
+      });
+
+      return user.save();
+    }
+  })
+  .then(() => {
     app.listen(4000);
   })
   .catch(err => {

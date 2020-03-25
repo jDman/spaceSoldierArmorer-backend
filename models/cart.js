@@ -11,8 +11,7 @@ const cartSchema = new Schema(
     items: [
       {
         armor: {
-          type: Schema.Types.ObjectId,
-          ref: 'Armor',
+          type: Object,
           required: true
         },
         quantity: { type: Number, required: true }
@@ -22,4 +21,4 @@ const cartSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Cart', userSchema);
+module.exports = mongoose.model('Cart', cartSchema);
