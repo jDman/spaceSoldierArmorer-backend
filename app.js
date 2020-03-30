@@ -49,7 +49,10 @@ mongoose
       const user = new User({
         email: 'test@test.com',
         password: 'sfsfsf',
-        userName: 'Freddy'
+        userName: 'Freddy',
+        cart: {
+          items: []
+        }
       });
 
       return user.save();

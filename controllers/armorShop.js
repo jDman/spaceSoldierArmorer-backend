@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const Armor = require('../models/armor');
-const Cart = require('../models/cart');
-
-const ObjectId = mongoose.Types.ObjectId;
+const User = require('../models/user');
 
 exports.getAllArmor = async (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -52,15 +50,16 @@ exports.getArmor = async (req, res, next) => {
   }
 };
 
-exports.addCart = async (req, res, next) => {
+exports.updateCart = async (req, res, next) => {
   const { items } = req.body;
-  const userId = '5e70dfb438cee83fd9e004fd';
+  const userId = '5e7de2879c138b8e04c733b8';
 
   try {
     const armorIds = items.map(item => item.armorId);
     const armorList = await Armor.find({ _id: { $in: armorIds } });
+    const user = await User.findById(userId);
 
-    const cartItems = items.map(item => {
+    const newCartItems = items.map(item => {
       const armor = armorList.find(
         armor => armor._id.toString() === item.armorId.toString()
       );
@@ -72,59 +71,15 @@ exports.addCart = async (req, res, next) => {
       };
     });
 
-    const cart = await Cart.create({
-      userId,
-      items: cartItems
-    });
+    await user.addToCart(newCartItems);
 
     return res
       .status(201)
-      .json({ message: 'Cart created successfully.', cart });
+      .json({ message: 'Added successfully to cart.', cart: user.cart });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
       next(err);
-      return err;
-    }
-  }
-};
-
-exports.updateCart = async (req, res, next) => {
-  const { items } = req.body;
-  const userId = '5e70dfb438cee83fd9e004fd';
-
-  try {
-    const armorIds = items.map(item => item.armorId);
-    const armorList = await Armor.find({ _id: { $in: armorIds } });
-    const cart = await Cart.findOne({ userId: userId });
-
-    const updatedCartItems = items.map(item => {
-      const armor = armorList.find(
-        armor => armor._id.toString() === item.armorId.toString()
-      );
-      const quantity = items.find(i => i.armorId === item.armorId).quantity;
-
-      return {
-        armor,
-        quantity
-      };
-    });
-
-    const updatedCartObject = {
-      userId,
-      items: updatedCartItems
-    };
-
-    const newCart = await Cart.updateOne({ userId: userId }, updatedCartObject);
-
-    return res
-      .status(200)
-      .json({ message: 'Cart updated successfully.', cart: newCart });
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-      next(err);
-
       return err;
     }
   }

@@ -9,8 +9,6 @@ router.get('/armor', armorShopController.getAllArmor);
 
 router.get('/armor/:armorId', armorShopController.getArmor);
 
-router.post('/armor/cart', armorShopController.addCart);
-
-router.put('/armor/cart/:cartId', armorShopController.updateCart);
+router.put('/armor/cart', armorShopController.updateCart);
 
 module.exports = router;
