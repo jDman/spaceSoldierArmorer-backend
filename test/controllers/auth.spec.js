@@ -9,11 +9,9 @@ describe('authController', () => {
   describe('signup', () => {
     before(() => {
       sinon.stub(User.prototype, 'save');
-      sinon.stub(User, 'findOne');
     });
 
     after(() => {
-      User.findOne.restore();
       User.prototype.save.restore();
     });
 
@@ -22,28 +20,13 @@ describe('authController', () => {
         body: { email: 'john&test1.com', password: 'pnQ234lKfg', name: 'John' }
       };
 
-      User.findOne.throws();
+      User.prototype.save.throws();
 
       await authController
         .signup(req, {}, () => {})
         .then(result => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
-        });
-    });
-
-    it('should throw a 403 error if existing user found', async () => {
-      const req = {
-        body: { email: 'john&test1.com', password: 'pnQ234lKfg', name: 'John' }
-      };
-
-      User.findOne.returns({ _id: 'pnQ234lKfg' });
-
-      await authController
-        .signup(req, {}, () => {})
-        .then(result => {
-          expect(result).to.be.an('error');
-          expect(result).to.have.property('statusCode', 403);
         });
     });
 
@@ -66,8 +49,6 @@ describe('authController', () => {
           this.userId = data.userId;
         }
       };
-
-      User.findOne.returns(null);
 
       User.prototype.save.returns({ _id: 'pnQ234lKfg' });
 

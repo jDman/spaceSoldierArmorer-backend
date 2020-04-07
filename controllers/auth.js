@@ -1,30 +1,33 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
 
 const jwtSecret = require('../database/jwt-secret');
 
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
-  const { email, password, name } = req.body;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation Failed');
+
+    error.statusCode = 422;
+    error.data = errors.array();
+
+    next(error);
+    return error;
+  }
+
+  const { email, password, userName } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email: email });
-
-    if (existingUser) {
-      const error = new Error('User already exists!');
-      error.statusCode = 403;
-
-      next(error);
-      return error;
-    }
-
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = new User({
       email,
       password: hashedPassword,
-      name
+      userName
     });
 
     const savedUser = await user.save();
@@ -46,7 +49,7 @@ exports.login = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
-    const user = User.findOne({ email: email });
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
       const error = new Error('User not found!');

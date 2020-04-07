@@ -12,6 +12,7 @@ const SESSION_KEY = require('./database/session-secret');
 
 const armorShopRoutes = require('./routes/armorShop');
 const armorAdminRoutes = require('./routes/armorAdmin');
+const authRoutes = require('./routes/auth');
 
 const User = require('./models/user');
 
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use('/shop', armorShopRoutes);
 app.use('/admin', armorAdminRoutes);
+app.use('/auth', authRoutes);
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
