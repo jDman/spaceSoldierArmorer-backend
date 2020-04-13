@@ -51,31 +51,18 @@ exports.getArmor = async (req, res, next) => {
 };
 
 exports.updateCart = async (req, res, next) => {
-  const { items } = req.body;
-  const userId = '5e7de2879c138b8e04c733b8';
+  const { armorId, quantity } = req.body;
+  const { userId } = req;
 
   try {
-    const armorIds = items.map(item => item.armorId);
-    const armorList = await Armor.find({ _id: { $in: armorIds } });
+    const armor = await Armor.findById(armorId);
     const user = await User.findById(userId);
 
-    const newCartItems = items.map(item => {
-      const armor = armorList.find(
-        armor => armor._id.toString() === item.armorId.toString()
-      );
-      const quantity = items.find(i => i.armorId === item.armorId).quantity;
-
-      return {
-        armor,
-        quantity
-      };
-    });
-
-    await user.addToCart(newCartItems);
+    await user.addToCart({ armor, quantity });
 
     return res
       .status(201)
-      .json({ message: 'Added successfully to cart.', cart: user.cart });
+      .json({ message: 'Added successfully to cart.', cart: user.cart.items });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

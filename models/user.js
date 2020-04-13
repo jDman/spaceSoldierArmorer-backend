@@ -30,19 +30,27 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-userSchema.methods.addToCart = async function(items) {
-  this.cart.items = items.map(cartItem => {
-    const existingCartItem = this.cart.items.find(
-      newCartItem =>
-        newCartItem.armor._id.toString() === cartItem.armor._id.toString()
-    );
+userSchema.methods.addToCart = async function(chosenItem) {
+  const chosenItemQuantity = +chosenItem.quantity;
 
-    if (existingCartItem) {
-      cartItem.quantity = cartItem.quantity + existingCartItem.quantity;
-    }
+  const cartItemIndex = this.cart.items.findIndex(
+    item => item.armor._id.toString() === chosenItem.armor._id.toString()
+  );
+  const updatedCartItems = [...this.cart.items];
 
-    return cartItem;
-  });
+  if (cartItemIndex > -1) {
+    console.log(chosenItemQuantity, this.cart.items[cartItemIndex].quantity);
+    updatedCartItems[cartItemIndex].quantity =
+      chosenItemQuantity + this.cart.items[cartItemIndex].quantity;
+  } else {
+    updatedCartItems.push(chosenItem);
+  }
+
+  const updatedCart = {
+    items: updatedCartItems
+  };
+
+  this.cart = updatedCart;
 
   return await this.save();
 };

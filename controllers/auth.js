@@ -33,8 +33,7 @@ exports.signup = async (req, res, next) => {
     const savedUser = await user.save();
 
     return res.status(201).json({
-      message: 'User created',
-      userId: savedUser._id
+      message: 'User created'
     });
   } catch (err) {
     if (!err.statusCode) {

@@ -165,28 +165,24 @@ describe('armorShop controller', () => {
 
   describe('updateCart', () => {
     beforeEach(() => {
-      sinon.stub(Armor, 'find');
+      sinon.stub(Armor, 'findById');
       sinon.stub(User, 'findById');
     });
 
     afterEach(() => {
-      Armor.find.restore();
+      Armor.findById.restore();
       User.findById.restore();
     });
 
     it('should throw an error 500 code when accessing the database for Armor fails', async () => {
       const req = {
         body: {
-          items: [
-            {
-              armorId: '5e70e0330fe361400ed21c2b',
-              quantity: 4
-            }
-          ]
+          armorId: '5e70e0330fe361400ed21c2b',
+          quantity: 4
         }
       };
 
-      Armor.find.throws();
+      Armor.findById.throws();
 
       await armorShopController
         .updateCart(req, {}, () => {})
@@ -199,36 +195,30 @@ describe('armorShop controller', () => {
     it('should throw an error 500 code when accessing the database for an User fails', async () => {
       const req = {
         body: {
-          items: [
-            {
-              armorId: '5e70e0330fe361400ed21c2b',
-              quantity: 4
-            }
-          ]
+          armorId: '5e70e0330fe361400ed21c2b',
+          quantity: 4
         }
       };
 
-      Armor.find.returns([
-        {
-          createdBy: {
-            userId: { $oid: '5e70dfb438cee83fd9e004fd' },
-            userName: 'Freddy'
-          },
-          stock: { $numberInt: '0' },
-          shield: { $numberInt: '0' },
-          discount: { $numberInt: '0' },
-          _id: { $oid: '5e70e0330fe361400ed21c2b' },
-          type: 'helmet',
-          cost: { $numberInt: '109' },
-          protection: 'medium',
-          quality: 'low',
-          description: 'A ordinary looking helmet.',
-          company: 'starscape_systems',
-          createdAt: { $date: { $numberLong: '1584455731063' } },
-          updatedAt: { $date: { $numberLong: '1584455731063' } },
-          __v: { $numberInt: '0' }
-        }
-      ]);
+      Armor.findById.returns({
+        createdBy: {
+          userId: { $oid: '5e70dfb438cee83fd9e004fd' },
+          userName: 'Freddy'
+        },
+        stock: { $numberInt: '0' },
+        shield: { $numberInt: '0' },
+        discount: { $numberInt: '0' },
+        _id: { $oid: '5e70e0330fe361400ed21c2b' },
+        type: 'helmet',
+        cost: { $numberInt: '109' },
+        protection: 'medium',
+        quality: 'low',
+        description: 'A ordinary looking helmet.',
+        company: 'starscape_systems',
+        createdAt: { $date: { $numberLong: '1584455731063' } },
+        updatedAt: { $date: { $numberLong: '1584455731063' } },
+        __v: { $numberInt: '0' }
+      });
 
       User.findById.throws();
 
@@ -243,12 +233,8 @@ describe('armorShop controller', () => {
     it('should call Users addToCart method with appropriate information', async () => {
       const req = {
         body: {
-          items: [
-            {
-              armorId: '5e70e0330fe361400ed21c2b',
-              quantity: 4
-            }
-          ]
+          armorId: '5e70e0330fe361400ed21c2b',
+          quantity: 4
         }
       };
 
@@ -265,27 +251,25 @@ describe('armorShop controller', () => {
         }
       };
 
-      Armor.find.returns([
-        {
-          createdBy: {
-            userId: { $oid: '5e70dfb438cee83fd9e004fd' },
-            userName: 'Freddy'
-          },
-          stock: { $numberInt: '0' },
-          shield: { $numberInt: '0' },
-          discount: { $numberInt: '0' },
-          _id: '5e70e0330fe361400ed21c2b',
-          type: 'helmet',
-          cost: { $numberInt: '109' },
-          protection: 'medium',
-          quality: 'low',
-          description: 'A ordinary looking helmet.',
-          company: 'starscape_systems',
-          createdAt: { $date: { $numberLong: '1584455731063' } },
-          updatedAt: { $date: { $numberLong: '1584455731063' } },
-          __v: { $numberInt: '0' }
-        }
-      ]);
+      Armor.findById.returns({
+        createdBy: {
+          userId: { $oid: '5e70dfb438cee83fd9e004fd' },
+          userName: 'Freddy'
+        },
+        stock: { $numberInt: '0' },
+        shield: { $numberInt: '0' },
+        discount: { $numberInt: '0' },
+        _id: '5e70e0330fe361400ed21c2b',
+        type: 'helmet',
+        cost: { $numberInt: '109' },
+        protection: 'medium',
+        quality: 'low',
+        description: 'A ordinary looking helmet.',
+        company: 'starscape_systems',
+        createdAt: { $date: { $numberLong: '1584455731063' } },
+        updatedAt: { $date: { $numberLong: '1584455731063' } },
+        __v: { $numberInt: '0' }
+      });
 
       const user = {
         email: 'test1@test1.com',
@@ -294,9 +278,9 @@ describe('armorShop controller', () => {
         cart: {
           items: []
         },
-        addToCart: async items => {
-          user.cart.items = items;
-          return await Promise.resolve(items);
+        addToCart: async item => {
+          user.cart.items = [item];
+          return await Promise.resolve([item]);
         }
       };
 
@@ -307,52 +291,160 @@ describe('armorShop controller', () => {
         .then(() => {
           expect(res).to.have.property('statusCode', 201);
 
-          expect(res.cart).to.eql({
-            items: [
-              {
-                armor: {
-                  __v: {
-                    $numberInt: '0'
-                  },
-                  _id: '5e70e0330fe361400ed21c2b',
-                  company: 'starscape_systems',
-                  cost: {
-                    $numberInt: '109'
-                  },
-                  createdAt: {
-                    $date: {
-                      $numberLong: '1584455731063'
-                    }
-                  },
-                  createdBy: {
-                    userId: {
-                      $oid: '5e70dfb438cee83fd9e004fd'
-                    },
-                    userName: 'Freddy'
-                  },
-                  description: 'A ordinary looking helmet.',
-                  discount: {
-                    $numberInt: '0'
-                  },
-                  protection: 'medium',
-                  quality: 'low',
-                  shield: {
-                    $numberInt: '0'
-                  },
-                  stock: {
-                    $numberInt: '0'
-                  },
-                  type: 'helmet',
-                  updatedAt: {
-                    $date: {
-                      $numberLong: '1584455731063'
-                    }
+          expect(res.cart).to.eql([
+            {
+              armor: {
+                __v: {
+                  $numberInt: '0'
+                },
+                _id: '5e70e0330fe361400ed21c2b',
+                company: 'starscape_systems',
+                cost: {
+                  $numberInt: '109'
+                },
+                createdAt: {
+                  $date: {
+                    $numberLong: '1584455731063'
                   }
                 },
-                quantity: 4
-              }
-            ]
-          });
+                createdBy: {
+                  userId: {
+                    $oid: '5e70dfb438cee83fd9e004fd'
+                  },
+                  userName: 'Freddy'
+                },
+                description: 'A ordinary looking helmet.',
+                discount: {
+                  $numberInt: '0'
+                },
+                protection: 'medium',
+                quality: 'low',
+                shield: {
+                  $numberInt: '0'
+                },
+                stock: {
+                  $numberInt: '0'
+                },
+                type: 'helmet',
+                updatedAt: {
+                  $date: {
+                    $numberLong: '1584455731063'
+                  }
+                }
+              },
+              quantity: 4
+            }
+          ]);
+        });
+    });
+
+    it('should call Users addToCart method and update users cart when armor already added', async () => {
+      const req = {
+        body: {
+          armorId: '5e70e0330fe361400ed21c2b',
+          quantity: 4
+        }
+      };
+
+      const res = {
+        cart: null,
+        statusCode: 500,
+        status: function(code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function(data) {
+          this.cart = data.cart;
+        }
+      };
+
+      const armor = {
+        createdBy: {
+          userId: { $oid: '5e70dfb438cee83fd9e004fd' },
+          userName: 'Freddy'
+        },
+        stock: { $numberInt: '0' },
+        shield: { $numberInt: '0' },
+        discount: { $numberInt: '0' },
+        _id: '5e70e0330fe361400ed21c2b',
+        type: 'helmet',
+        cost: { $numberInt: '109' },
+        protection: 'medium',
+        quality: 'low',
+        description: 'A ordinary looking helmet.',
+        company: 'starscape_systems',
+        createdAt: { $date: { $numberLong: '1584455731063' } },
+        updatedAt: { $date: { $numberLong: '1584455731063' } },
+        __v: { $numberInt: '0' }
+      };
+
+      Armor.findById.returns(armor);
+
+      const user = {
+        email: 'test1@test1.com',
+        password: 'sfsfsf',
+        userName: 'Freddy',
+        cart: {
+          items: [{ armor, quantity: 1 }]
+        },
+        addToCart: async item => {
+          user.cart.items = [item];
+          return await Promise.resolve([item]);
+        }
+      };
+
+      User.findById.returns(user);
+
+      await armorShopController
+        .updateCart(req, res, () => {})
+        .then(() => {
+          expect(res).to.have.property('statusCode', 201);
+
+          expect(res.cart).to.eql([
+            {
+              armor: {
+                __v: {
+                  $numberInt: '0'
+                },
+                _id: '5e70e0330fe361400ed21c2b',
+                company: 'starscape_systems',
+                cost: {
+                  $numberInt: '109'
+                },
+                createdAt: {
+                  $date: {
+                    $numberLong: '1584455731063'
+                  }
+                },
+                createdBy: {
+                  userId: {
+                    $oid: '5e70dfb438cee83fd9e004fd'
+                  },
+                  userName: 'Freddy'
+                },
+                description: 'A ordinary looking helmet.',
+                discount: {
+                  $numberInt: '0'
+                },
+                protection: 'medium',
+                quality: 'low',
+                shield: {
+                  $numberInt: '0'
+                },
+                stock: {
+                  $numberInt: '0'
+                },
+                type: 'helmet',
+                updatedAt: {
+                  $date: {
+                    $numberLong: '1584455731063'
+                  }
+                }
+              },
+              quantity: 4
+            }
+          ]);
         });
     });
   });

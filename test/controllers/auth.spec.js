@@ -30,14 +30,13 @@ describe('authController', () => {
         });
     });
 
-    it('should save a new user and return a 201 statusCode in the response along with user id and confirmation message', async () => {
+    it('should save a new user and return a 201 statusCode in the response along with confirmation message', async () => {
       const req = {
         body: { email: 'john&test1.com', password: 'pnQ234lKfg', name: 'John' }
       };
 
       const res = {
         message: null,
-        userId: null,
         statusCode: 500,
         status: function(code) {
           this.statusCode = code;
@@ -46,7 +45,6 @@ describe('authController', () => {
         },
         json: function(data) {
           this.message = data.message;
-          this.userId = data.userId;
         }
       };
 
@@ -58,7 +56,6 @@ describe('authController', () => {
           expect(res).to.have.property('statusCode', 201);
 
           expect(res.message).to.equal('User created');
-          expect(res.userId).to.equal('pnQ234lKfg');
         });
     });
   });
@@ -102,7 +99,7 @@ describe('authController', () => {
         });
     });
 
-    it('should ', async () => {
+    it('should authenticate the user', async () => {
       const userId = '123456789';
       const hashedPassword = await bcrypt.hash('pnQ234lKfg', 12);
       const req = {
