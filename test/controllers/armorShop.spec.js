@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const Armor = require('../../models/armor');
+const Order = require('../../models/order');
 const User = require('../../models/user');
 const armorShopController = require('../../controllers/armorShop');
 
@@ -19,15 +20,15 @@ describe('armorShop controller', () => {
       const mockedCurrentPageNumber = 3;
       const req = {
         query: {
-          page: mockedCurrentPageNumber
-        }
+          page: mockedCurrentPageNumber,
+        },
       };
 
       Armor.find.throws();
 
       await armorShopController
         .getAllArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -37,20 +38,20 @@ describe('armorShop controller', () => {
       const armorList = [
         {
           _id: {
-            $oid: '5e70e0330fe361400ed21c2b'
+            $oid: '5e70e0330fe361400ed21c2b',
           },
           stock: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           shield: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           discount: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           type: 'helmet',
           cost: {
-            $numberInt: '109'
+            $numberInt: '109',
           },
           protection: 'medium',
           quality: 'low',
@@ -58,52 +59,52 @@ describe('armorShop controller', () => {
           company: 'starscape_systems',
           createdBy: {
             userId: {
-              $oid: '5e70dfb438cee83fd9e004fd'
+              $oid: '5e70dfb438cee83fd9e004fd',
             },
-            userName: 'Freddy'
+            userName: 'Freddy',
           },
           createdAt: {
             $date: {
-              $numberLong: '1584455731063'
-            }
+              $numberLong: '1584455731063',
+            },
           },
           updatedAt: {
             $date: {
-              $numberLong: '1584455731063'
-            }
+              $numberLong: '1584455731063',
+            },
           },
           __v: {
-            $numberInt: '0'
-          }
-        }
+            $numberInt: '0',
+          },
+        },
       ];
       Armor.find.returns({
         countDocuments: () => 1,
-        sort: function() {
+        sort: function () {
           return this;
         },
-        skip: function() {
+        skip: function () {
           return this;
         },
-        limit: () => Promise.resolve(armorList)
+        limit: () => Promise.resolve(armorList),
       });
 
       const req = {
         query: {
-          page: 1
-        }
+          page: 1,
+        },
       };
       const res = {
         armor: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.armor = data.armor;
-        }
+        },
       };
 
       await armorShopController
@@ -130,15 +131,15 @@ describe('armorShop controller', () => {
       const armorId = 3;
       const req = {
         params: {
-          armorId
-        }
+          armorId,
+        },
       };
 
       Armor.findById.throws();
 
       await armorShopController
         .getArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -148,15 +149,15 @@ describe('armorShop controller', () => {
       const armorId = 3;
       const req = {
         params: {
-          armorId: armorId
-        }
+          armorId: armorId,
+        },
       };
 
       Armor.findById.returns(null);
 
       await armorShopController
         .getArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 404);
         });
@@ -174,13 +175,13 @@ describe('armorShop controller', () => {
 
     it('should throw an error 500 code when accessing the database fails', async () => {
       const req = {
-        userId: '1'
+        userId: '1',
       };
       User.findById.throws();
 
       await armorShopController
         .getCart(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -188,76 +189,76 @@ describe('armorShop controller', () => {
 
     it('should return the users cart items', async () => {
       const req = {
-        userId: '1'
+        userId: '1',
       };
       const res = {
         items: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.items = data.items;
-        }
+        },
       };
       const userCartItem = {
         armor: {
           __v: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           _id: '5e70e0330fe361400ed21c2b',
           company: 'starscape_systems',
           cost: {
-            $numberInt: '109'
+            $numberInt: '109',
           },
           createdAt: {
             $date: {
-              $numberLong: '1584455731063'
-            }
+              $numberLong: '1584455731063',
+            },
           },
           createdBy: {
             userId: {
-              $oid: '5e70dfb438cee83fd9e004fd'
+              $oid: '5e70dfb438cee83fd9e004fd',
             },
-            userName: 'Freddy'
+            userName: 'Freddy',
           },
           description: 'A ordinary looking helmet.',
           discount: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           protection: 'medium',
           quality: 'low',
           shield: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           stock: {
-            $numberInt: '0'
+            $numberInt: '0',
           },
           type: 'helmet',
           updatedAt: {
             $date: {
-              $numberLong: '1584455731063'
-            }
-          }
+              $numberLong: '1584455731063',
+            },
+          },
         },
-        quantity: 4
+        quantity: 4,
       };
       const user = {
         email: 'test1@test1.com',
         password: 'sfsfsf',
         userName: 'Freddy',
         cart: {
-          items: [userCartItem]
-        }
+          items: [userCartItem],
+        },
       };
 
       User.findById.returns(user);
 
       await armorShopController
         .getCart(req, res, () => {})
-        .then(result => {
+        .then((result) => {
           expect(res).to.have.property('statusCode', 201);
 
           expect(res.items).to.eql([userCartItem]);
@@ -280,15 +281,15 @@ describe('armorShop controller', () => {
       const req = {
         body: {
           armorId: '5e70e0330fe361400ed21c2b',
-          quantity: 4
-        }
+          quantity: 4,
+        },
       };
 
       Armor.findById.throws();
 
       await armorShopController
         .updateCart(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -298,14 +299,14 @@ describe('armorShop controller', () => {
       const req = {
         body: {
           armorId: '5e70e0330fe361400ed21c2b',
-          quantity: 4
-        }
+          quantity: 4,
+        },
       };
 
       Armor.findById.returns({
         createdBy: {
           userId: { $oid: '5e70dfb438cee83fd9e004fd' },
-          userName: 'Freddy'
+          userName: 'Freddy',
         },
         stock: { $numberInt: '0' },
         shield: { $numberInt: '0' },
@@ -319,14 +320,14 @@ describe('armorShop controller', () => {
         company: 'starscape_systems',
         createdAt: { $date: { $numberLong: '1584455731063' } },
         updatedAt: { $date: { $numberLong: '1584455731063' } },
-        __v: { $numberInt: '0' }
+        __v: { $numberInt: '0' },
       });
 
       User.findById.throws();
 
       await armorShopController
         .updateCart(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -336,27 +337,27 @@ describe('armorShop controller', () => {
       const req = {
         body: {
           armorId: '5e70e0330fe361400ed21c2b',
-          quantity: 4
-        }
+          quantity: 4,
+        },
       };
 
       const res = {
         cart: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.cart = data.cart;
-        }
+        },
       };
 
       Armor.findById.returns({
         createdBy: {
           userId: { $oid: '5e70dfb438cee83fd9e004fd' },
-          userName: 'Freddy'
+          userName: 'Freddy',
         },
         stock: { $numberInt: '0' },
         shield: { $numberInt: '0' },
@@ -370,7 +371,7 @@ describe('armorShop controller', () => {
         company: 'starscape_systems',
         createdAt: { $date: { $numberLong: '1584455731063' } },
         updatedAt: { $date: { $numberLong: '1584455731063' } },
-        __v: { $numberInt: '0' }
+        __v: { $numberInt: '0' },
       });
 
       const user = {
@@ -378,12 +379,12 @@ describe('armorShop controller', () => {
         password: 'sfsfsf',
         userName: 'Freddy',
         cart: {
-          items: []
+          items: [],
         },
-        addToCart: async item => {
+        addToCart: async (item) => {
           user.cart.items = [item];
           return await Promise.resolve([item]);
-        }
+        },
       };
 
       User.findById.returns(user);
@@ -397,45 +398,45 @@ describe('armorShop controller', () => {
             {
               armor: {
                 __v: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 _id: '5e70e0330fe361400ed21c2b',
                 company: 'starscape_systems',
                 cost: {
-                  $numberInt: '109'
+                  $numberInt: '109',
                 },
                 createdAt: {
                   $date: {
-                    $numberLong: '1584455731063'
-                  }
+                    $numberLong: '1584455731063',
+                  },
                 },
                 createdBy: {
                   userId: {
-                    $oid: '5e70dfb438cee83fd9e004fd'
+                    $oid: '5e70dfb438cee83fd9e004fd',
                   },
-                  userName: 'Freddy'
+                  userName: 'Freddy',
                 },
                 description: 'A ordinary looking helmet.',
                 discount: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 protection: 'medium',
                 quality: 'low',
                 shield: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 stock: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 type: 'helmet',
                 updatedAt: {
                   $date: {
-                    $numberLong: '1584455731063'
-                  }
-                }
+                    $numberLong: '1584455731063',
+                  },
+                },
               },
-              quantity: 4
-            }
+              quantity: 4,
+            },
           ]);
         });
     });
@@ -444,27 +445,27 @@ describe('armorShop controller', () => {
       const req = {
         body: {
           armorId: '5e70e0330fe361400ed21c2b',
-          quantity: 4
-        }
+          quantity: 4,
+        },
       };
 
       const res = {
         cart: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.cart = data.cart;
-        }
+        },
       };
 
       const armor = {
         createdBy: {
           userId: { $oid: '5e70dfb438cee83fd9e004fd' },
-          userName: 'Freddy'
+          userName: 'Freddy',
         },
         stock: { $numberInt: '0' },
         shield: { $numberInt: '0' },
@@ -478,7 +479,7 @@ describe('armorShop controller', () => {
         company: 'starscape_systems',
         createdAt: { $date: { $numberLong: '1584455731063' } },
         updatedAt: { $date: { $numberLong: '1584455731063' } },
-        __v: { $numberInt: '0' }
+        __v: { $numberInt: '0' },
       };
 
       Armor.findById.returns(armor);
@@ -488,12 +489,12 @@ describe('armorShop controller', () => {
         password: 'sfsfsf',
         userName: 'Freddy',
         cart: {
-          items: [{ armor, quantity: 1 }]
+          items: [{ armor, quantity: 1 }],
         },
-        addToCart: async item => {
+        addToCart: async (item) => {
           user.cart.items = [item];
           return await Promise.resolve([item]);
-        }
+        },
       };
 
       User.findById.returns(user);
@@ -507,45 +508,45 @@ describe('armorShop controller', () => {
             {
               armor: {
                 __v: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 _id: '5e70e0330fe361400ed21c2b',
                 company: 'starscape_systems',
                 cost: {
-                  $numberInt: '109'
+                  $numberInt: '109',
                 },
                 createdAt: {
                   $date: {
-                    $numberLong: '1584455731063'
-                  }
+                    $numberLong: '1584455731063',
+                  },
                 },
                 createdBy: {
                   userId: {
-                    $oid: '5e70dfb438cee83fd9e004fd'
+                    $oid: '5e70dfb438cee83fd9e004fd',
                   },
-                  userName: 'Freddy'
+                  userName: 'Freddy',
                 },
                 description: 'A ordinary looking helmet.',
                 discount: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 protection: 'medium',
                 quality: 'low',
                 shield: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 stock: {
-                  $numberInt: '0'
+                  $numberInt: '0',
                 },
                 type: 'helmet',
                 updatedAt: {
                   $date: {
-                    $numberLong: '1584455731063'
-                  }
-                }
+                    $numberLong: '1584455731063',
+                  },
+                },
               },
-              quantity: 4
-            }
+              quantity: 4,
+            },
           ]);
         });
     });
@@ -564,15 +565,15 @@ describe('armorShop controller', () => {
       const req = {
         userId: '123',
         query: {
-          itemId: '456'
-        }
+          itemId: '456',
+        },
       };
 
       User.findById.throws();
 
       await armorShopController
         .deleteCartItem(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -582,21 +583,21 @@ describe('armorShop controller', () => {
       const req = {
         userId: '123',
         query: {
-          itemId: '456'
-        }
+          itemId: '456',
+        },
       };
 
       const res = {
         message: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.message = data.message;
-        }
+        },
       };
 
       const user = {
@@ -604,12 +605,12 @@ describe('armorShop controller', () => {
         password: 'sfsfsf',
         userName: 'Freddy',
         cart: {
-          items: [{ _id: '456', armor: {}, quantity: 1 }]
+          items: [{ _id: '456', armor: {}, quantity: 1 }],
         },
-        deleteCartItem: async item => {
+        deleteCartItem: async (item) => {
           user.cart.items = [];
           return await Promise.resolve([item]);
-        }
+        },
       };
 
       User.findById.returns(user);
@@ -619,6 +620,124 @@ describe('armorShop controller', () => {
         .then(() => {
           expect(res).to.have.property('statusCode', 204);
           expect(res).to.have.property('message', 'Item removed from cart.');
+        });
+    });
+  });
+
+  describe('addOrder', () => {
+    before(() => {
+      sinon.stub(Order.prototype, 'save');
+      sinon.stub(User, 'findById');
+    });
+
+    after(() => {
+      Order.prototype.save.restore();
+      User.findById.restore();
+    });
+
+    it('should throw a 500 error if user not found', async () => {
+      const req = {
+        body: {
+          items: [
+            {
+              armor: { _id: '2' },
+              config: { value: 3 },
+              totalCost: 900,
+            },
+            {
+              armor: { _id: '3' },
+              config: { value: 1 },
+              totalCost: 100,
+            },
+          ],
+        },
+        userId: '123',
+      };
+
+      Order.prototype.save.returns(Promise.resolve());
+
+      User.findById.throws();
+
+      await armorShopController
+        .addOrder(req, {}, () => {})
+        .then((result) => {
+          expect(result).to.be.an('error');
+          expect(result).to.have.property('statusCode', 500);
+        });
+    });
+
+    it('should throw a 500 error if save fails', async () => {
+      const req = {
+        body: {
+          items: [],
+        },
+        userId: '123',
+      };
+
+      Order.prototype.save.throws();
+
+      await armorShopController
+        .addOrder(req, {}, () => {})
+        .then((result) => {
+          expect(result).to.be.an('error');
+          expect(result).to.have.property('statusCode', 500);
+        });
+    });
+
+    it('should create an order with correct information', async () => {
+      const req = {
+        body: {
+          items: [
+            {
+              armor: { _id: '2' },
+              config: { value: 3 },
+              totalCost: 900,
+            },
+            {
+              armor: { _id: '3' },
+              config: { value: 1 },
+              totalCost: 100,
+            },
+          ],
+        },
+        userId: '123',
+      };
+
+      const res = {
+        message: null,
+        statusCode: 500,
+        status: function (code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function (data) {
+          this.message = data.message;
+        },
+      };
+
+      Order.prototype.save.returns(Promise.resolve());
+
+      User.findById.returns({
+        email: 'test1@test1.com',
+        password: 'sfsfsf',
+        userName: 'Freddy',
+        cart: {
+          items: [{ _id: '456', armor: {}, quantity: 1 }],
+        },
+        clearCart: async function () {
+          this.items = [];
+        },
+      });
+
+      await armorShopController
+        .addOrder(req, res, () => {})
+        .then((result) => {
+          expect(res).to.have.property(
+            'message',
+            'Order successfully created!'
+          );
+          expect(res).to.have.property('statusCode', 201);
         });
     });
   });

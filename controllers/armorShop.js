@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Armor = require('../models/armor');
+const Order = require('../models/order');
 const User = require('../models/user');
 
 exports.getAllArmor = async (req, res, next) => {
@@ -81,6 +82,64 @@ exports.updateCart = async (req, res, next) => {
     return res
       .status(201)
       .json({ message: 'Added successfully to cart.', cart: user.cart.items });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      next(err);
+      return err;
+    }
+  }
+};
+
+exports.addOrder = async (req, res, next) => {
+  const { items } = req.body;
+  const { userId } = req;
+
+  const totalCostItems = items.reduce((prevItem, currItem) => {
+    if (currItem) {
+      let previousTotal = 0;
+      if (prevItem && prevItem.total) {
+        previousTotal = prevItem.total;
+      }
+
+      return {
+        total: currItem.totalCost + previousTotal,
+      };
+    }
+
+    return prevItem;
+  }, {});
+
+  try {
+    const orderItems = items.map((item) => {
+      try {
+        const armor = item.armor;
+
+        const quantity = item.config.value;
+
+        return {
+          armor,
+          quantity,
+        };
+      } catch (err) {
+        next(err);
+        return err;
+      }
+    });
+
+    const order = new Order({
+      userId,
+      items: orderItems,
+      totalCost: totalCostItems.total,
+    });
+
+    await order.save();
+
+    const user = User.findById(userId);
+
+    await user.clearCart();
+
+    return res.status(201).json({ message: 'Order successfully created!' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

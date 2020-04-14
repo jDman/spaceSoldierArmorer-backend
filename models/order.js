@@ -16,7 +16,8 @@ const orderSchema = new Schema(
         },
         quantity: { type: Number, required: true }
       }
-    ]
+    ],
+    totalCost: { type: Number, required: true }
   },
   { timestamps: true }
 );

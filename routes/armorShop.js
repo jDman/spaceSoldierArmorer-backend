@@ -14,6 +14,8 @@ router.get('/armor/cart/items', isAuthenticated, armorShopController.getCart);
 
 router.put('/armor/cart', isAuthenticated, armorShopController.updateCart);
 
+router.post('/armor/order', isAuthenticated, armorShopController.addOrder);
+
 router.delete(
   '/armor/cart/item',
   isAuthenticated,

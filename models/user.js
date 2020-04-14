@@ -5,36 +5,36 @@ const userSchema = new Schema(
   {
     email: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     userName: {
       type: String,
-      required: true
+      required: true,
     },
     cart: {
       items: [
         {
           armor: {
             type: Object,
-            required: true
+            required: true,
           },
-          quantity: { type: Number, required: true }
-        }
-      ]
-    }
+          quantity: { type: Number, required: true },
+        },
+      ],
+    },
   },
   { timestamps: true }
 );
 
-userSchema.methods.addToCart = async function(chosenItem) {
+userSchema.methods.addToCart = async function (chosenItem) {
   const chosenItemQuantity = +chosenItem.quantity;
 
   const cartItemIndex = this.cart.items.findIndex(
-    item => item.armor._id.toString() === chosenItem.armor._id.toString()
+    (item) => item.armor._id.toString() === chosenItem.armor._id.toString()
   );
   const updatedCartItems = [...this.cart.items];
 
@@ -46,7 +46,7 @@ userSchema.methods.addToCart = async function(chosenItem) {
   }
 
   const updatedCart = {
-    items: updatedCartItems
+    items: updatedCartItems,
   };
 
   this.cart = updatedCart;
@@ -54,13 +54,23 @@ userSchema.methods.addToCart = async function(chosenItem) {
   return await this.save();
 };
 
-userSchema.methods.deleteCartItem = async function(itemId) {
+userSchema.methods.deleteCartItem = async function (itemId) {
   const updatedCartItems = this.cart.items.filter(
-    item => item._id.toString() !== itemId.toString()
+    (item) => item._id.toString() !== itemId.toString()
   );
 
   const updatedCart = {
-    items: updatedCartItems
+    items: updatedCartItems,
+  };
+
+  this.cart = updatedCart;
+
+  return await this.save();
+};
+
+userSchema.methods.clearCart = async function () {
+  const updatedCart = {
+    items: [],
   };
 
   this.cart = updatedCart;
