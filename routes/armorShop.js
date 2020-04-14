@@ -10,6 +10,14 @@ router.get('/armor', isAuthenticated, armorShopController.getAllArmor);
 
 router.get('/armor/:armorId', isAuthenticated, armorShopController.getArmor);
 
+router.get('/armor/cart/items', isAuthenticated, armorShopController.getCart);
+
 router.put('/armor/cart', isAuthenticated, armorShopController.updateCart);
+
+router.delete(
+  '/armor/cart/item',
+  isAuthenticated,
+  armorShopController.deleteCartItem
+);
 
 module.exports = router;

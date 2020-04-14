@@ -163,6 +163,108 @@ describe('armorShop controller', () => {
     });
   });
 
+  describe('getCart', () => {
+    before(() => {
+      sinon.stub(User, 'findById');
+    });
+
+    after(() => {
+      User.findById.restore();
+    });
+
+    it('should throw an error 500 code when accessing the database fails', async () => {
+      const req = {
+        userId: '1'
+      };
+      User.findById.throws();
+
+      await armorShopController
+        .getCart(req, {}, () => {})
+        .then(result => {
+          expect(result).to.be.an('error');
+          expect(result).to.have.property('statusCode', 500);
+        });
+    });
+
+    it('should return the users cart items', async () => {
+      const req = {
+        userId: '1'
+      };
+      const res = {
+        items: null,
+        statusCode: 500,
+        status: function(code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function(data) {
+          this.items = data.items;
+        }
+      };
+      const userCartItem = {
+        armor: {
+          __v: {
+            $numberInt: '0'
+          },
+          _id: '5e70e0330fe361400ed21c2b',
+          company: 'starscape_systems',
+          cost: {
+            $numberInt: '109'
+          },
+          createdAt: {
+            $date: {
+              $numberLong: '1584455731063'
+            }
+          },
+          createdBy: {
+            userId: {
+              $oid: '5e70dfb438cee83fd9e004fd'
+            },
+            userName: 'Freddy'
+          },
+          description: 'A ordinary looking helmet.',
+          discount: {
+            $numberInt: '0'
+          },
+          protection: 'medium',
+          quality: 'low',
+          shield: {
+            $numberInt: '0'
+          },
+          stock: {
+            $numberInt: '0'
+          },
+          type: 'helmet',
+          updatedAt: {
+            $date: {
+              $numberLong: '1584455731063'
+            }
+          }
+        },
+        quantity: 4
+      };
+      const user = {
+        email: 'test1@test1.com',
+        password: 'sfsfsf',
+        userName: 'Freddy',
+        cart: {
+          items: [userCartItem]
+        }
+      };
+
+      User.findById.returns(user);
+
+      await armorShopController
+        .getCart(req, res, () => {})
+        .then(result => {
+          expect(res).to.have.property('statusCode', 201);
+
+          expect(res.items).to.eql([userCartItem]);
+        });
+    });
+  });
+
   describe('updateCart', () => {
     beforeEach(() => {
       sinon.stub(Armor, 'findById');
@@ -445,6 +547,78 @@ describe('armorShop controller', () => {
               quantity: 4
             }
           ]);
+        });
+    });
+  });
+
+  describe('deleteCartItem', () => {
+    before(() => {
+      sinon.stub(User, 'findById');
+    });
+
+    after(() => {
+      User.findById.restore();
+    });
+
+    it('should throw an error 500 code when accessing the database for an User fails', async () => {
+      const req = {
+        userId: '123',
+        query: {
+          itemId: '456'
+        }
+      };
+
+      User.findById.throws();
+
+      await armorShopController
+        .deleteCartItem(req, {}, () => {})
+        .then(result => {
+          expect(result).to.be.an('error');
+          expect(result).to.have.property('statusCode', 500);
+        });
+    });
+
+    it('should remove item from cart, returning a confirmation message and statusCode of 204', async () => {
+      const req = {
+        userId: '123',
+        query: {
+          itemId: '456'
+        }
+      };
+
+      const res = {
+        message: null,
+        statusCode: 500,
+        status: function(code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function(data) {
+          this.message = data.message;
+        }
+      };
+
+      const user = {
+        email: 'test1@test1.com',
+        password: 'sfsfsf',
+        userName: 'Freddy',
+        cart: {
+          items: [{ _id: '456', armor: {}, quantity: 1 }]
+        },
+        deleteCartItem: async item => {
+          user.cart.items = [];
+          return await Promise.resolve([item]);
+        }
+      };
+
+      User.findById.returns(user);
+
+      await armorShopController
+        .deleteCartItem(req, res, () => {})
+        .then(() => {
+          expect(res).to.have.property('statusCode', 204);
+          expect(res).to.have.property('message', 'Item removed from cart.');
         });
     });
   });

@@ -39,12 +39,25 @@ userSchema.methods.addToCart = async function(chosenItem) {
   const updatedCartItems = [...this.cart.items];
 
   if (cartItemIndex > -1) {
-    console.log(chosenItemQuantity, this.cart.items[cartItemIndex].quantity);
     updatedCartItems[cartItemIndex].quantity =
       chosenItemQuantity + this.cart.items[cartItemIndex].quantity;
   } else {
     updatedCartItems.push(chosenItem);
   }
+
+  const updatedCart = {
+    items: updatedCartItems
+  };
+
+  this.cart = updatedCart;
+
+  return await this.save();
+};
+
+userSchema.methods.deleteCartItem = async function(itemId) {
+  const updatedCartItems = this.cart.items.filter(
+    item => item._id.toString() !== itemId.toString()
+  );
 
   const updatedCart = {
     items: updatedCartItems

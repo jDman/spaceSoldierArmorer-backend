@@ -50,6 +50,24 @@ exports.getArmor = async (req, res, next) => {
   }
 };
 
+exports.getCart = async (req, res, next) => {
+  const { userId } = req;
+
+  try {
+    const user = await User.findById(userId);
+
+    return res
+      .status(201)
+      .json({ message: 'Added successfully to cart.', items: user.cart.items });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      next(err);
+      return err;
+    }
+  }
+};
+
 exports.updateCart = async (req, res, next) => {
   const { armorId, quantity } = req.body;
   const { userId } = req;
@@ -63,6 +81,25 @@ exports.updateCart = async (req, res, next) => {
     return res
       .status(201)
       .json({ message: 'Added successfully to cart.', cart: user.cart.items });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      next(err);
+      return err;
+    }
+  }
+};
+
+exports.deleteCartItem = async (req, res, next) => {
+  const { itemId } = req.query;
+  const { userId } = req;
+
+  try {
+    const user = await User.findById(userId);
+
+    await user.deleteCartItem(itemId);
+
+    return res.status(204).json({ message: 'Item removed from cart.' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
