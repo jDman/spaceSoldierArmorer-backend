@@ -6,13 +6,15 @@ const isAuthenticated = require('../middleware/is-authenticated');
 
 const router = express.Router();
 
-router.get('/armor', isAuthenticated, armorShopController.getAllArmor);
+router.get('/armors', isAuthenticated, armorShopController.getAllArmor);
 
 router.get('/armor/:armorId', isAuthenticated, armorShopController.getArmor);
 
 router.get('/armor/cart/items', isAuthenticated, armorShopController.getCart);
 
 router.put('/armor/cart', isAuthenticated, armorShopController.updateCart);
+
+router.get('/orders', isAuthenticated, armorShopController.getAllOrders);
 
 router.post('/armor/order', isAuthenticated, armorShopController.addOrder);
 

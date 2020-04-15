@@ -21,6 +21,7 @@ describe('armorShop controller', () => {
       const req = {
         query: {
           page: mockedCurrentPageNumber,
+          perPage: 1,
         },
       };
 
@@ -92,10 +93,11 @@ describe('armorShop controller', () => {
       const req = {
         query: {
           page: 1,
+          perPage: 1,
         },
       };
       const res = {
-        armor: null,
+        armors: null,
         statusCode: 500,
         status: function (code) {
           this.statusCode = code;
@@ -103,7 +105,7 @@ describe('armorShop controller', () => {
           return this;
         },
         json: function (data) {
-          this.armor = data.armor;
+          this.armors = data.armors;
         },
       };
 
@@ -111,7 +113,7 @@ describe('armorShop controller', () => {
         .getAllArmor(req, res, () => {})
         .then(() => {
           expect(res.statusCode).to.equal(200);
-          expect(res.armor).to.equal(armorList);
+          expect(res.armors).to.equal(armorList);
         });
     });
   });
@@ -620,6 +622,76 @@ describe('armorShop controller', () => {
         .then(() => {
           expect(res).to.have.property('statusCode', 204);
           expect(res).to.have.property('message', 'Item removed from cart.');
+        });
+    });
+  });
+
+  describe('getAllOrders', () => {
+    before(() => {
+      sinon.stub(Order, 'find');
+    });
+
+    after(() => {
+      Order.find.restore();
+    });
+
+    it('should throw a 500 error when database access fails', async () => {
+      const req = {
+        query: {
+          page: 3,
+          perPage: 10,
+        },
+      };
+
+      Order.find.throws();
+
+      await armorShopController
+        .getAllOrders(req, {}, () => {})
+        .then((result) => {
+          expect(result).to.be.an('error');
+          expect(result).to.have.property('statusCode', 500);
+        });
+    });
+
+    it('should return order list with a response statusCode of 200', async () => {
+      const req = {
+        query: {
+          page: 3,
+          perPage: 10,
+        },
+      };
+
+      const orderList = [{}];
+
+      Order.find.returns({
+        countDocuments: () => 1,
+        sort: function () {
+          return this;
+        },
+        skip: function () {
+          return this;
+        },
+        limit: () => Promise.resolve(orderList),
+      });
+
+      const res = {
+        orders: null,
+        statusCode: 500,
+        status: function (code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function (data) {
+          this.orders = data.orders;
+        },
+      };
+
+      await armorShopController
+        .getAllOrders(req, res, () => {})
+        .then(() => {
+          expect(res.orders).to.eql([{}]);
+          expect(res).to.have.property('statusCode', 200);
         });
     });
   });

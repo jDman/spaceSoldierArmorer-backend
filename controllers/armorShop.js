@@ -3,20 +3,22 @@ const Armor = require('../models/armor');
 const Order = require('../models/order');
 const User = require('../models/user');
 
+const ObjectId = mongoose.Types.ObjectId;
+
 exports.getAllArmor = async (req, res, next) => {
   const currentPage = req.query.page || 1;
-  const perPage = req.query.page || 10;
+  const perPage = req.query.perPage || 10;
 
   try {
     const totalItems = await Armor.find().countDocuments();
-    const armor = await Armor.find()
+    const armors = await Armor.find()
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
     return res
       .status(200)
-      .json({ message: 'Fetched armor successfully.', armor, totalItems });
+      .json({ message: 'Fetched armor successfully.', armors, totalItems });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -91,6 +93,30 @@ exports.updateCart = async (req, res, next) => {
   }
 };
 
+exports.getAllOrders = async (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.page || 10;
+
+  try {
+    const totalItems = await Order.find().countDocuments();
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+
+    return res
+      .status(200)
+      .json({ message: 'Fetched Orders successfully.', orders, totalItems });
+  } catch (err) {
+    console.log('HERERERER', err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      next(err);
+      return err;
+    }
+  }
+};
+
 exports.addOrder = async (req, res, next) => {
   const { items } = req.body;
   const { userId } = req;
@@ -118,7 +144,7 @@ exports.addOrder = async (req, res, next) => {
         const quantity = item.config.value;
 
         return {
-          armor,
+          armor: armor,
           quantity,
         };
       } catch (err) {
@@ -135,7 +161,7 @@ exports.addOrder = async (req, res, next) => {
 
     await order.save();
 
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
 
     await user.clearCart();
 
