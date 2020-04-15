@@ -3,8 +3,6 @@ const Armor = require('../models/armor');
 const Order = require('../models/order');
 const User = require('../models/user');
 
-const ObjectId = mongoose.Types.ObjectId;
-
 exports.getAllArmor = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = req.query.perPage || 10;
