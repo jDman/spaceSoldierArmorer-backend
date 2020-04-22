@@ -14,27 +14,34 @@ describe('isAdmin', () => {
     User.findById.restore();
   });
 
-  it('should throw an error if call to database errors', () => {
+  it('should throw an error if call to database errors', async () => {
     const req = {
       userId: '123',
     };
 
     User.findById.throws();
 
-    expect(isAdmin.bind(this, req, {}, () => {})).to.throw();
+    await isAdmin(req, {}, () => {}).then((result) => {
+      expect(result).to.be.an('error');
+      expect(result).to.have.property('statusCode', 500);
+    });
   });
 
-  it('should throw an error with message "User not found!" if user not found', () => {
+  it('should throw an error with message "User not found!" if user not found', async () => {
     const req = {
       userId: '123',
     };
 
     User.findById.returns(null);
 
-    expect(isAdmin.bind(this, req, {}, () => {})).to.throw('User not found!');
+    await isAdmin(req, {}, () => {}).then((result) => {
+      expect(result).to.be.an('error');
+      expect(result).to.have.property('statusCode', 404);
+      expect(result).to.have.property('message', 'User not found!');
+    });
   });
 
-  it('should throw error if returned user not an admin', () => {
+  it('should throw error if returned user not an admin', async () => {
     const req = {
       userId: '123',
     };
@@ -43,10 +50,14 @@ describe('isAdmin', () => {
       isAdmin: false,
     });
 
-    expect(isAdmin.bind(this, req, {}, () => {})).to.throw('Not authorised!');
+    await isAdmin(req, {}, () => {}).then((result) => {
+      expect(result).to.be.an('error');
+      expect(result).to.have.property('statusCode', 401);
+      expect(result).to.have.property('message', 'Not authorised!');
+    });
   });
 
-  it('should not throw an error if user an admin', () => {
+  it('should not throw an error if user an admin', async () => {
     const req = {
       userId: '123',
     };
@@ -55,8 +66,8 @@ describe('isAdmin', () => {
       isAdmin: true,
     });
 
-    expect(isAdmin.bind(this, req, {}, () => {})).to.not.throw(
-      'User not found!'
-    );
+    await isAdmin(req, {}, () => {}).then((result) => {
+      expect(result).to.not.be.an('error');
+    });
   });
 });

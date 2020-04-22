@@ -1,10 +1,10 @@
 const User = require('../models/user');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const userId = req.userId;
 
   try {
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       const error = new Error('User not found!');
@@ -17,10 +17,14 @@ module.exports = (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-  } catch (error) {
-    error.statusCode = 500;
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
 
-    throw error;
+    next(err);
+
+    return err;
   }
 
   next();
