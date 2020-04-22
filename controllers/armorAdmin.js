@@ -3,10 +3,9 @@ const mongoose = require('mongoose');
 const Armor = require('../models/armor');
 const User = require('../models/user');
 
-const ObjectId = mongoose.Types.ObjectId;
-
 exports.createArmor = async (req, res, next) => {
   const {
+    name,
     type,
     cost,
     protection,
@@ -17,11 +16,12 @@ exports.createArmor = async (req, res, next) => {
     shield,
     discount,
     company,
-    createdBy
+    createdBy,
   } = req.body;
 
   try {
     const armor = await Armor.create({
+      name,
       type,
       cost,
       protection,
@@ -32,7 +32,7 @@ exports.createArmor = async (req, res, next) => {
       shield,
       discount,
       company,
-      createdBy
+      createdBy,
     });
 
     return res
@@ -41,15 +41,16 @@ exports.createArmor = async (req, res, next) => {
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-
-      return err;
     }
+    next(err);
+
+    return err;
   }
 };
 
 exports.updateArmor = async (req, res, next) => {
   const {
+    name,
     type,
     cost,
     protection,
@@ -60,7 +61,7 @@ exports.updateArmor = async (req, res, next) => {
     shield,
     discount,
     company,
-    createdBy
+    createdBy,
   } = req.body;
   const { armorId } = req.params;
 
@@ -68,6 +69,7 @@ exports.updateArmor = async (req, res, next) => {
     const armor = await Armor.updateOne(
       { _id: armorId },
       {
+        name,
         type,
         cost,
         protection,
@@ -78,7 +80,7 @@ exports.updateArmor = async (req, res, next) => {
         shield,
         discount,
         company,
-        createdBy
+        createdBy,
       }
     );
 
@@ -88,10 +90,11 @@ exports.updateArmor = async (req, res, next) => {
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-
-      return err;
     }
+
+    next(err);
+
+    return err;
   }
 };
 
@@ -109,14 +112,14 @@ exports.deleteArmor = async (req, res, next) => {
     await user.save();
 
     return res.status(200).json({
-      message: 'Armor removed!'
+      message: 'Armor removed!',
     });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-
-      return err;
     }
+    next(err);
+
+    return err;
   }
 };

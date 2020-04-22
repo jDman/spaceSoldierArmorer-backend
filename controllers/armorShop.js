@@ -4,8 +4,8 @@ const Order = require('../models/order');
 const User = require('../models/user');
 
 exports.getAllArmor = async (req, res, next) => {
-  const currentPage = req.query.page || 1;
-  const perPage = req.query.perPage || 10;
+  const currentPage = +req.query.page || 1;
+  const perPage = +req.query.perPage || 10;
 
   try {
     const totalItems = await Armor.find().countDocuments();
@@ -35,8 +35,7 @@ exports.getArmor = async (req, res, next) => {
     if (!armor) {
       const error = new Error('Could not find armor.');
       error.statusCode = 404;
-      next(error);
-      return error;
+      throw error;
     }
 
     return res
@@ -45,9 +44,10 @@ exports.getArmor = async (req, res, next) => {
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-      return err;
     }
+
+    next(err);
+    return err;
   }
 };
 
@@ -92,21 +92,33 @@ exports.updateCart = async (req, res, next) => {
 };
 
 exports.getAllOrders = async (req, res, next) => {
-  const currentPage = req.query.page || 1;
-  const perPage = req.query.page || 10;
+  const currentPage = +req.query.page || 1;
+  const itemsPerPage = +req.query.perPage || 10;
 
   try {
     const totalItems = await Order.find().countDocuments();
     const orders = await Order.find()
       .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * perPage)
-      .limit(perPage);
+      .skip((currentPage - 1) * itemsPerPage)
+      .limit(itemsPerPage);
 
-    return res
-      .status(200)
-      .json({ message: 'Fetched Orders successfully.', orders, totalItems });
+    const hasNextPage = itemsPerPage * currentPage < totalItems;
+    const hasPrevPage = currentPage > 1;
+    const nextPage = hasNextPage ? currentPage + 1 : currentPage;
+    const prevPage = hasPrevPage ? currentPage - 1 : currentPage;
+    const lastPage = Math.ceil(totalItems / itemsPerPage);
+
+    return res.status(200).json({
+      message: 'Fetched Orders successfully.',
+      orders,
+      totalItems,
+      hasNextPage,
+      hasPrevPage,
+      nextPage,
+      prevPage,
+      lastPage,
+    });
   } catch (err) {
-    console.log('HERERERER', err);
     if (!err.statusCode) {
       err.statusCode = 500;
       next(err);
@@ -136,19 +148,24 @@ exports.addOrder = async (req, res, next) => {
 
   try {
     const orderItems = items.map((item) => {
-      try {
-        const armor = item.armor;
+      const armor = item.armor;
 
-        const quantity = item.config.value;
+      if (!(armor.stock >= +item.config.value)) {
+        const error = new Error(
+          `Not enough units of ${armor.name} in stock. ${armor.stock} units available.`
+        );
 
-        return {
-          armor: armor,
-          quantity,
-        };
-      } catch (err) {
-        next(err);
-        return err;
+        error.statusCode = 422;
+
+        throw error;
       }
+
+      const quantity = item.config.value;
+
+      return {
+        armor,
+        quantity,
+      };
     });
 
     const order = new Order({
@@ -159,17 +176,26 @@ exports.addOrder = async (req, res, next) => {
 
     await order.save();
 
+    for (let i = 0; i < orderItems.length; i++) {
+      const armor = await Armor.findById(orderItems[i].armor._id);
+
+      await armor.updateStock(orderItems[i].quantity);
+    }
+
     const user = await User.findById(userId);
 
     await user.clearCart();
 
-    return res.status(201).json({ message: 'Order successfully created!' });
+    return res
+      .status(201)
+      .json({ message: 'Order successfully created!', order });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-      return err;
     }
+
+    next(err);
+    return err;
   }
 };
 

@@ -656,7 +656,7 @@ describe('armorShop controller', () => {
     it('should return order list with a response statusCode of 200', async () => {
       const req = {
         query: {
-          page: 3,
+          page: 1,
           perPage: 10,
         },
       };
@@ -676,6 +676,12 @@ describe('armorShop controller', () => {
 
       const res = {
         orders: null,
+        totalItems: null,
+        hasNextPage: null,
+        hasPrevPage: null,
+        nextPage: null,
+        prevPage: null,
+        lastPage: null,
         statusCode: 500,
         status: function (code) {
           this.statusCode = code;
@@ -684,6 +690,12 @@ describe('armorShop controller', () => {
         },
         json: function (data) {
           this.orders = data.orders;
+          this.totalItems = data.totalItems;
+          this.hasNextPage = data.hasNextPage;
+          this.hasPrevPage = data.hasPrevPage;
+          this.nextPage = data.nextPage;
+          this.prevPage = data.prevPage;
+          this.lastPage = data.lastPage;
         },
       };
 
@@ -691,6 +703,12 @@ describe('armorShop controller', () => {
         .getAllOrders(req, res, () => {})
         .then(() => {
           expect(res.orders).to.eql([{}]);
+          expect(res.totalItems).to.eql(1);
+          expect(res.hasNextPage).to.eql(false);
+          expect(res.hasPrevPage).to.eql(false);
+          expect(res.nextPage).to.eql(1);
+          expect(res.prevPage).to.eql(1);
+          expect(res.lastPage).to.eql(1);
           expect(res).to.have.property('statusCode', 200);
         });
     });
@@ -700,11 +718,13 @@ describe('armorShop controller', () => {
     before(() => {
       sinon.stub(Order.prototype, 'save');
       sinon.stub(User, 'findById');
+      sinon.stub(Armor, 'findById');
     });
 
     after(() => {
       Order.prototype.save.restore();
       User.findById.restore();
+      Armor.findById.restore();
     });
 
     it('should throw a 500 error if user not found', async () => {
@@ -712,12 +732,14 @@ describe('armorShop controller', () => {
         body: {
           items: [
             {
-              armor: { _id: '2' },
+              id: '44',
+              armor: { _id: '2', stock: 4 },
               config: { value: 3 },
               totalCost: 900,
             },
             {
-              armor: { _id: '3' },
+              id: '45',
+              armor: { _id: '3', stock: 4 },
               config: { value: 1 },
               totalCost: 100,
             },
@@ -756,19 +778,15 @@ describe('armorShop controller', () => {
         });
     });
 
-    it('should create an order with correct information', async () => {
+    it('should throw a 422 error if quantity of order greater than items in stock', async () => {
       const req = {
         body: {
           items: [
             {
-              armor: { _id: '2' },
+              _id: '22',
+              armor: { _id: '2', name: 'ABC', stock: 1 },
               config: { value: 3 },
               totalCost: 900,
-            },
-            {
-              armor: { _id: '3' },
-              config: { value: 1 },
-              totalCost: 100,
             },
           ],
         },
@@ -788,6 +806,44 @@ describe('armorShop controller', () => {
         },
       };
 
+      await armorShopController
+        .addOrder(req, res, () => {})
+        .then((result) => {
+          expect(result).to.be.an('error');
+
+          expect(result).to.have.property('statusCode', 422);
+        });
+    });
+
+    it('should create an order with correct information', async () => {
+      const req = {
+        body: {
+          items: [
+            {
+              armor: { _id: '2', stock: 4 },
+              config: { value: 3 },
+              totalCost: 900,
+            },
+          ],
+        },
+        userId: '123',
+      };
+
+      const res = {
+        message: null,
+        order: null,
+        statusCode: 500,
+        status: function (code) {
+          this.statusCode = code;
+
+          return this;
+        },
+        json: function (data) {
+          this.order = data.order;
+          this.message = data.message;
+        },
+      };
+
       Order.prototype.save.returns(Promise.resolve());
 
       User.findById.returns({
@@ -795,10 +851,17 @@ describe('armorShop controller', () => {
         password: 'sfsfsf',
         userName: 'Freddy',
         cart: {
-          items: [{ _id: '456', armor: {}, quantity: 1 }],
+          items: [{ _id: '456', armor: { _id: '2', stock: 4 }, quantity: 1 }],
         },
         clearCart: async function () {
           this.items = [];
+        },
+      });
+
+      Armor.findById.returns({
+        stock: 4,
+        updateStock: async function () {
+          this.stock = 1;
         },
       });
 
@@ -809,6 +872,7 @@ describe('armorShop controller', () => {
             'message',
             'Order successfully created!'
           );
+          expect(res.order.items).to.exist;
           expect(res).to.have.property('statusCode', 201);
         });
     });

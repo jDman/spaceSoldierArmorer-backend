@@ -15,8 +15,7 @@ exports.signup = async (req, res, next) => {
     error.statusCode = 422;
     error.data = errors.array();
 
-    next(error);
-    return error;
+    throw error;
   }
 
   const { email, password, userName } = req.body;
@@ -27,20 +26,21 @@ exports.signup = async (req, res, next) => {
     const user = new User({
       email,
       password: hashedPassword,
-      userName
+      userName,
     });
 
     const savedUser = await user.save();
 
     return res.status(201).json({
-      message: 'User created'
+      message: 'User created',
     });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
-      next(err);
-      return err;
     }
+
+    next(err);
+    return err;
   }
 };
 
@@ -59,6 +59,7 @@ exports.login = async (req, res, next) => {
     }
 
     const userId = user._id.toString();
+    const isAdmin = user.isAdmin;
 
     const isEqual = await bcrypt.compare(password, user.password);
 
@@ -73,7 +74,7 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign(
       {
         email: user.email,
-        userId
+        userId,
       },
       jwtSecret,
       { expiresIn: '1h' }
@@ -82,7 +83,8 @@ exports.login = async (req, res, next) => {
     return res.status(200).json({
       message: 'User authenticated',
       token,
-      userId
+      userId,
+      isAdmin,
     });
   } catch (err) {
     if (!err.statusCode) {

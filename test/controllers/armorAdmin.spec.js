@@ -21,6 +21,7 @@ describe('armorAdmin controller', () => {
     it('should throw an error 500 code when writing to the database fails', async () => {
       const req = {
         body: {
+          name: 'test',
           stock: 0,
           shield: 0,
           discount: 0,
@@ -32,16 +33,16 @@ describe('armorAdmin controller', () => {
           company: 'starscape_systems',
           createdBy: {
             userId: '5e70dfb438cee83fd9e004fd',
-            userName: 'Freddy'
-          }
-        }
+            userName: 'Freddy',
+          },
+        },
       };
 
       Armor.create.throws();
 
       await armorAdminController
         .createArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -50,6 +51,7 @@ describe('armorAdmin controller', () => {
     it('should create a new armor based on the data passed in', async () => {
       const req = {
         body: {
+          name: 'test',
           stock: 0,
           shield: 0,
           discount: 0,
@@ -61,29 +63,29 @@ describe('armorAdmin controller', () => {
           company: 'starscape_systems',
           createdBy: {
             userId: '5e70dfb438cee83fd9e004fd',
-            userName: 'Freddy'
-          }
-        }
+            userName: 'Freddy',
+          },
+        },
       };
 
       const res = {
         armor: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.armor = data.armor;
-        }
+        },
       };
 
       Armor.create.returns(req.body);
 
       await armorAdminController
         .createArmor(req, res, () => {})
-        .then(result => {
+        .then((result) => {
           expect(res.statusCode).to.equal(201);
           expect(res.armor).to.eq(req.body);
         });
@@ -102,6 +104,7 @@ describe('armorAdmin controller', () => {
     it('should throw an error 500 code when writing to the database fails', async () => {
       const req = {
         body: {
+          name: 'test',
           stock: 0,
           shield: 0,
           discount: 0,
@@ -113,17 +116,17 @@ describe('armorAdmin controller', () => {
           company: 'starscape_systems',
           createdBy: {
             userId: '5e70dfb438cee83fd9e004fd',
-            userName: 'Freddy'
-          }
+            userName: 'Freddy',
+          },
         },
-        params: { armorId: '123456789' }
+        params: { armorId: '123456789' },
       };
 
       Armor.updateOne.throws();
 
       await armorAdminController
         .updateArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -132,6 +135,7 @@ describe('armorAdmin controller', () => {
     it('should update an armor based on the data passed in', async () => {
       const req = {
         body: {
+          name: '',
           stock: 0,
           shield: 0,
           discount: 0,
@@ -143,23 +147,23 @@ describe('armorAdmin controller', () => {
           company: 'starscape_systems',
           createdBy: {
             userId: '5e70dfb438cee83fd9e004fd',
-            userName: 'Freddy'
-          }
+            userName: 'Freddy',
+          },
         },
-        params: { armorId: '123456789' }
+        params: { armorId: '123456789' },
       };
 
       const res = {
         armor: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.armor = data.armor;
-        }
+        },
       };
 
       const updatedArmor = { ...req.body, _id: req.params };
@@ -168,7 +172,7 @@ describe('armorAdmin controller', () => {
 
       await armorAdminController
         .updateArmor(req, res, () => {})
-        .then(result => {
+        .then((result) => {
           expect(res.statusCode).to.equal(200);
           expect(res.armor).to.eq(updatedArmor);
         });
@@ -188,14 +192,14 @@ describe('armorAdmin controller', () => {
 
     it('should throw an error 500 code when accessing and removing armor from the database fails', async () => {
       const req = {
-        params: { armorId: '123456789' }
+        params: { armorId: '123456789' },
       };
 
       Armor.findByIdAndRemove.throws();
 
       await armorAdminController
         .deleteArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -203,7 +207,7 @@ describe('armorAdmin controller', () => {
 
     it('should throw an error 500 code when accessing a User from the database fails', async () => {
       const req = {
-        params: { armorId: '123456789' }
+        params: { armorId: '123456789' },
       };
 
       Armor.findByIdAndRemove.returns(true);
@@ -212,7 +216,7 @@ describe('armorAdmin controller', () => {
 
       await armorAdminController
         .deleteArmor(req, {}, () => {})
-        .then(result => {
+        .then((result) => {
           expect(result).to.be.an('error');
           expect(result).to.have.property('statusCode', 500);
         });
@@ -220,7 +224,7 @@ describe('armorAdmin controller', () => {
 
     it('should remove armor', async () => {
       const req = {
-        params: { armorId: '123456789' }
+        params: { armorId: '123456789' },
       };
       const user = new User({
         _id: new ObjectId('5e7de2879c138b8e04c733b8'),
@@ -230,6 +234,7 @@ describe('armorAdmin controller', () => {
         cart: {
           items: [
             {
+              name: 'test',
               stock: 0,
               shield: 0,
               discount: 0,
@@ -241,11 +246,11 @@ describe('armorAdmin controller', () => {
               company: 'starscape_systems',
               createdBy: {
                 userId: '5e70dfb438cee83fd9e004fd',
-                userName: 'Freddy'
-              }
-            }
-          ]
-        }
+                userName: 'Freddy',
+              },
+            },
+          ],
+        },
       });
 
       const fake = async () => Promise.resolve(true);
@@ -254,14 +259,14 @@ describe('armorAdmin controller', () => {
       const res = {
         message: null,
         statusCode: 500,
-        status: function(code) {
+        status: function (code) {
           this.statusCode = code;
 
           return this;
         },
-        json: function(data) {
+        json: function (data) {
           this.message = data.message;
-        }
+        },
       };
 
       Armor.findByIdAndRemove.returns(true);
@@ -270,7 +275,7 @@ describe('armorAdmin controller', () => {
 
       await armorAdminController
         .deleteArmor(req, res, () => {})
-        .then(result => {
+        .then((result) => {
           expect(res.statusCode).to.equal(200);
           expect(res.message).to.equal('Armor removed!');
         });
