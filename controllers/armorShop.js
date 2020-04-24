@@ -200,6 +200,7 @@ exports.addOrder = async (req, res, next) => {
 };
 
 exports.deleteCartItem = async (req, res, next) => {
+  console.log(req);
   const { itemId } = req.query;
   const { userId } = req;
 
