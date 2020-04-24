@@ -13,7 +13,7 @@ Note: You will need to create a database folder at the root of the project conta
 
 #### connection-uri.js
 
-'module.exports = 'mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<databaseName>';'
+'module.exports = 'mongodb+srv://'<username>':'<password>'@'<cluster>'.mongodb.net/'<databaseName>'';'
 
 #### jwt-secret.js
 
